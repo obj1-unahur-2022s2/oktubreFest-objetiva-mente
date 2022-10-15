@@ -1,0 +1,117 @@
+import Marcas.*
+import Carpas.*
+import Personas.*
+import Recargos.*
+
+const Messi = new Persona(peso = 67 , escuchaMusicaTradicional = true, nivelDeAguante = 2, nacionalidad = belga)
+const Cristiano = new Persona(peso = 85 , escuchaMusicaTradicional = false, nivelDeAguante = 3, nacionalidad = checo)
+const Greta = new Persona(peso = 60 , escuchaMusicaTradicional = true, nivelDeAguante = 1, nacionalidad = aleman)
+const Olga = new Persona(peso = 69 , escuchaMusicaTradicional = false, nivelDeAguante = 1, nacionalidad = aleman)
+
+const Corona = new CervezaRubia(cantidadDeLupulo = 1, paisDeOrigen = belga, precio = 100, graduacionRubia = 5)
+const Guiness = new CervezaNegra(cantidadDeLupulo = 5, paisDeOrigen = checo, precio = 150, graduacionReglamentaria = 9)
+const Hofbrau = new CervezaRoja(cantidadDeLupulo = 5, paisDeOrigen = aleman, precio = 200, graduacionReglamentaria = 9)
+
+const Carpa1 = new Carpas(limiteDeGente = 2, tieneBandaTradicional = false, marca = Corona, recargoDado = recargoPorCantidad)
+const Carpa2 = new Carpas(limiteDeGente = 5, tieneBandaTradicional = false, marca = Guiness, recargoDado = recargoFijo)
+const Carpa3 = new Carpas(limiteDeGente = 10, tieneBandaTradicional = true, marca = Hofbrau, recargoDado = recargoPorEbriedad)
+
+describe "Para entrar en la carpa"{
+	test "Entrar en carpa (comprobamos que quiere entrar y puede por la banda, por la graduacion,
+		  cantidad de lupulo, limite(indirectamente), cantidad es par, condicion extra de alemanes y le gusta la marca)"{
+		Carpa1.ingresarPersona(Olga)
+		Carpa2.ingresarPersona(Cristiano)
+		Carpa3.ingresarPersona(Greta)
+		Carpa3.ingresarPersona(Messi)
+		
+		assert.that(Carpa1.estaEnLaCarpa(Olga))
+		assert.that(Carpa2.estaEnLaCarpa(Cristiano))
+		assert.that(Carpa3.estaEnLaCarpa(Messi))
+		assert.that(Carpa3.estaEnLaCarpa(Greta))
+	}
+	
+	test "No puede entrar en carpa (Prueba los mismos mensaje que el test anterior)"{
+		Carpa3.ingresarPersona(Messi)
+		
+		assert.throwsExceptionWithMessage("No puede ingresar",{Carpa1.ingresarPersona(Cristiano)})
+		assert.throwsExceptionWithMessage("No puede ingresar",{Carpa2.ingresarPersona(Messi)})
+		assert.throwsExceptionWithMessage("No puede ingresar",{Carpa3.ingresarPersona(Olga)})
+		assert.throwsExceptionWithMessage("No puede ingresar",{Carpa3.ingresarPersona(Greta)})
+	}
+	
+}
+
+describe "Dentro de la carpa"{
+	method initialize(){
+		Carpa1.ingresarPersona(Olga)
+		Carpa2.ingresarPersona(Cristiano)
+		Carpa3.ingresarPersona(Greta)
+		Carpa3.ingresarPersona(Messi)
+		Carpa3.servirJarra(Greta, 1)
+		Carpa3.servirJarra(Greta, 2)
+		Carpa3.servirJarra(Greta, 3)
+		Carpa3.servirJarra(Greta, 4)
+	}
+	
+	test "Servimos 4 jarras, greta esta ebria, es borracha empedernida y esta entrando en vicio,
+		  precio de venta, recargo por ebriedad total gastado, capacidad de jarras compradas.  "{
+		
+		assert.that(Greta.esBorrachoEmpedernido())
+		assert.that(Greta.estaEntrandoEnVicio())
+		assert.equals(2400, Greta.totalGastado())
+	}
+	
+	test "Cantidad de personas en carpa 2, no es homogenea(hay 2 nacionalidades) y uno Messi no compro aca"{
+		  	
+		  	assert.equals(2,Carpa3.cantidadDePersonasEnLaCarpa())
+		  	assert.that(Carpa3.personasQueNoCompraronAca() == [Messi])
+		  	assert.notThat(Carpa3.esHomogenea())
+		  	
+		  }
+	test "Cantidad de borrachos es 1, cantidad de borrachos empedernidos es 1"{
+		  assert.equals(1,Carpa3.cantidadDeBorrachos())
+		  assert.equals(1,Carpa3.cantidadDeBorrachosEmpedernidos())
+	}
+	
+	test "Greta es patriota y la jarra mas cara comprada es la de 4 litros y su precio es 960"{
+		assert.that(Greta.esPatriota())
+		assert.equals(4,Greta.jarraMasCaraComprada().capacidadLitros())
+		assert.equals(960,Greta.precioDeJarraMasCaraComprada())
+	}
+	
+	test "Messi y Greta no son compatibles"{
+		assert.notThat(Messi.esCompatibleCon(Greta))
+	}
+	
+	test "Messi se pone borracho, cantidad de ebrios en la carpa 2, no es borracho empedernido y el precio total de venta
+		  es 150"{
+		Carpa3.servirJarra(Messi,0.5)
+		
+		assert.that(Messi.estaEbrio())
+		assert.notThat(Messi.esBorrachoEmpedernido())
+		assert.equals(2,Carpa3.cantidadDeBorrachos())
+		assert.equals(150,Messi.precioDeJarraMasCaraComprada())
+	}
+	
+	test "Messi y Greta son compatibles"{
+		Carpa3.servirJarra(Messi,0.5)
+		
+		assert.that(Messi.esCompatibleCon(Greta))
+	}
+
+	test "Precios de venta para carpa 1 y 2"{
+		Carpa2.servirJarra(Cristiano,1)
+		Carpa1.servirJarra(Olga,1)
+		
+		assert.equals(195,Cristiano.totalGastado())
+		assert.equals(140,Olga.totalGastado())
+	}
+	
+}
+
+
+
+
+
+
+
